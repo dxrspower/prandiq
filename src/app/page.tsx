@@ -1,12 +1,12 @@
 import { LogoutButton } from "@/components/logout-button";
 const menuItems = [
-  ["Resumen", "⌂"],
-  ["Ventas", "↗"],
-  ["Inventario", "▦"],
-  ["Compras", "◎"],
-  ["Proveedores", "◇"],
-  ["Facturación", "▤"],
-  ["Reportes", "◫"],
+  ["Resumen", "⌂", "/"],
+  ["Ventas", "↗", "#"],
+  ["Inventario", "▦", "/inventario"],
+  ["Compras", "◎", "#"],
+  ["Proveedores", "◇", "#"],
+  ["Facturación", "▤", "#"],
+  ["Reportes", "◫", "#"],
 ];
 
 const metrics = [
@@ -44,8 +44,8 @@ export default function Home() {
 
         <nav className="mt-9 space-y-1">
           <p className="mb-3 px-3 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">Operaciones</p>
-          {menuItems.map(([label, icon], index) => (
-            <a key={label} href="#" className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${index === 0 ? "bg-emerald-50 text-emerald-700" : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"}`}>
+          {menuItems.map(([label, icon, href], index) => (
+            <a key={label} href={href} className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${index === 0 ? "bg-emerald-50 text-emerald-700" : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"}`}>
               <span className={`grid h-7 w-7 place-items-center rounded-lg text-base ${index === 0 ? "bg-emerald-600 text-white" : "bg-slate-100 text-slate-500"}`}>{icon}</span>
               {label}
             </a>
