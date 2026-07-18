@@ -1,3 +1,4 @@
+import { LogoutButton } from "@/components/logout-button";
 const menuItems = [
   ["Resumen", "⌂"],
   ["Ventas", "↗"],
@@ -67,7 +68,7 @@ export default function Home() {
           <div className="flex items-center gap-3">
             <button className="hidden rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-600 shadow-sm sm:block">Descargar reporte</button>
             <button className="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-emerald-200">+ Nueva venta</button>
-            <div className="grid h-10 w-10 place-items-center rounded-full bg-slate-900 text-sm font-bold text-white">DR</div>
+            <LogoutButton initials="DR" />
           </div>
         </header>
 
