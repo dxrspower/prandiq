@@ -1,4 +1,6 @@
 import { LogoutButton } from "@/components/logout-button";
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 const menuItems = [
   ["Resumen", "⌂", "/"],
   ["Ventas", "↗", "#"],
@@ -18,19 +20,56 @@ const metrics = [
 
 const sales = [42, 54, 48, 68, 60, 82, 74, 91, 78, 96, 86, 100];
 
-const stock = [
-  ["Carne de res", "Proteínas", "3.5 kg", "Crítico"],
-  ["Pan de hamburguesa", "Panadería", "12 und.", "Bajo"],
-  ["Papas prefritas", "Congelados", "5 kg", "Bajo"],
-];
-
 const orders = [
   ["#1048", "Salón", "S/ 86.00", "Completada"],
   ["#1047", "Delivery", "S/ 54.50", "Preparando"],
   ["#1046", "Recojo", "S/ 39.90", "Completada"],
 ];
 
-export default function Home() {
+export default async function Home() {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  const { data: membership } = await supabase
+    .from("restaurant_members")
+    .select("restaurant_id")
+    .eq("user_id", user.id)
+    .limit(1)
+    .single();
+
+  const { data: products } = membership
+    ? await supabase
+        .from("products")
+        .select("id, name, category, unit, current_stock, minimum_stock")
+        .eq("restaurant_id", membership.restaurant_id)
+        .eq("active", true)
+        .order("current_stock", { ascending: true })
+    : { data: [] };
+
+  const criticalProducts = (products || []).filter(
+    (product) =>
+      Number(product.current_stock) <= Number(product.minimum_stock),
+  );
+
+  const criticalCount = criticalProducts.length;
+
+  const dashboardMetrics = metrics.map((metric) =>
+    metric[0] === "Stock crítico"
+      ? [
+          "Stock crítico",
+          `${criticalCount} ${criticalCount === 1 ? "producto" : "productos"}`,
+          "Revisar",
+          "text-amber-600",
+        ]
+      : metric,
+  );
   return (
     <main className="min-h-screen bg-[#f4f7fb] text-slate-900">
       <aside className="fixed inset-y-0 left-0 hidden w-64 flex-col border-r border-slate-200 bg-white px-5 py-6 lg:flex">
@@ -82,7 +121,7 @@ export default function Home() {
           </div>
 
           <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            {metrics.map(([label, value, change, color]) => (
+            {dashboardMetrics.map(([label, value, change, color]) => (
               <article key={label} className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
                 <p className="text-sm font-semibold text-slate-500">{label}</p>
                 <p className="mt-4 text-2xl font-black tracking-tight">{value}</p>
@@ -116,8 +155,26 @@ export default function Home() {
 
           <section className="grid gap-6 xl:grid-cols-2">
             <article className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
-              <div className="flex items-center justify-between border-b border-slate-100 p-5"><div><h3 className="font-extrabold">Alertas de inventario</h3><p className="mt-1 text-xs text-slate-400">Productos que necesitan reposición</p></div><button className="text-xs font-bold text-emerald-600">Ver inventario</button></div>
-              <div className="divide-y divide-slate-100">{stock.map(([product, category, amount, status]) => <div key={product} className="grid grid-cols-[1fr_auto_auto] items-center gap-4 px-5 py-4"><div><p className="text-sm font-bold">{product}</p><p className="text-xs text-slate-400">{category}</p></div><p className="text-sm font-extrabold">{amount}</p><span className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${status === "Crítico" ? "bg-rose-50 text-rose-600" : "bg-amber-50 text-amber-600"}`}>{status}</span></div>)}</div>
+              <div className="flex items-center justify-between border-b border-slate-100 p-5"><div><h3 className="font-extrabold">Alertas de inventario</h3><p className="mt-1 text-xs text-slate-400">Productos que necesitan reposición</p></div><a href="/inventario" className="text-xs font-bold text-emerald-600 hover:text-emerald-700">Ver inventario</a></div>
+              {criticalProducts.length === 0 ? (
+                <div className="px-5 py-10 text-center">
+                  <p className="text-sm font-bold text-emerald-600">Inventario en orden</p>
+                  <p className="mt-1 text-xs text-slate-400">No hay productos con stock bajo.</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-slate-100">
+                  {criticalProducts.map((product) => (
+                    <div key={product.id} className="grid grid-cols-[1fr_auto_auto] items-center gap-4 px-5 py-4">
+                      <div>
+                        <p className="text-sm font-bold">{product.name}</p>
+                        <p className="text-xs text-slate-400">{product.category || "Sin categoría"}</p>
+                      </div>
+                      <p className="text-sm font-extrabold">{Number(product.current_stock)} {product.unit}</p>
+                      <span className="rounded-full bg-rose-50 px-2.5 py-1 text-[10px] font-bold text-rose-600">Stock bajo</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </article>
 
             <article className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
