@@ -28,6 +28,16 @@ type Movement = {
 
 const units = ["unidad", "kg", "g", "l", "ml", "paquete", "caja"];
 
+const menuItems = [
+  ["Resumen", "⌂", "/"],
+  ["Ventas", "↗", "/ventas"],
+  ["Inventario", "▦", "/inventario"],
+  ["Compras", "◎", "/compras"],
+  ["Proveedores", "◇", "/proveedores"],
+  ["Facturación", "▤", "/facturacion"],
+  ["Reportes", "◫", "/reportes"],
+];
+
 function formatMoney(value: number) {
   return new Intl.NumberFormat("es-PE", {
     style: "currency",
@@ -44,11 +54,12 @@ function formatDate(value: string) {
 }
 
 const movementLabels: Record<string, string> = {
-  purchase: "Entrada",
-  sale: "Salida",
-  adjustment: "Ajuste positivo",
-  waste: "Pérdida",
-  return: "Devolución",
+  entrada: "Entrada",
+  purchase: "Compra",
+  salida: "Salida",
+  perdida: "Pérdida",
+  devolucion: "Devolución",
+  ajuste: "Ajuste positivo",
 };
 
 export default async function InventoryPage() {
@@ -103,6 +114,50 @@ export default async function InventoryPage() {
 
   return (
     <main className="min-h-screen bg-[#f4f7fb] text-slate-900">
+      <aside className="fixed inset-y-0 left-0 hidden w-64 flex-col border-r border-slate-200 bg-white px-5 py-6 lg:flex">
+        <div className="flex items-center gap-3 px-2">
+          <div className="grid h-10 w-10 place-items-center rounded-xl bg-emerald-600 text-lg font-black text-white">
+            P
+          </div>
+          <div>
+            <div className="text-xl font-black">
+              Plate<span className="text-emerald-600">IQ</span>
+            </div>
+            <p className="text-xs text-slate-400">Restaurant Intelligence</p>
+          </div>
+        </div>
+
+        <nav className="mt-9 space-y-1">
+          <p className="mb-3 px-3 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">
+            Operaciones
+          </p>
+          {menuItems.map(([label, icon, href]) => {
+            const active = href === "/inventario";
+            return (
+              <Link
+                key={label}
+                href={href}
+                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold ${
+                  active
+                    ? "bg-emerald-50 text-emerald-700"
+                    : "text-slate-500 hover:bg-slate-50"
+                }`}
+              >
+                <span className={`grid h-7 w-7 place-items-center rounded-lg ${active ? "bg-emerald-600 text-white" : "bg-slate-100"}`}>
+                  {icon}
+                </span>
+                {label}
+              </Link>
+            );
+          })}
+        </nav>
+        <div className="mt-auto rounded-2xl bg-slate-900 p-4 text-white">
+          <p className="text-xs font-semibold text-emerald-300">Control de inventario</p>
+          <p className="mt-2 text-sm font-bold">Gestiona productos, existencias y movimientos.</p>
+        </div>
+      </aside>
+
+      <div className="min-w-0 lg:pl-64">
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5">
           <div>
@@ -232,9 +287,7 @@ export default async function InventoryPage() {
                   <tbody className="divide-y divide-slate-100">
                     {movements.map((movement) => {
                       const product = productsById.get(movement.product_id);
-                      const addsStock = ["purchase", "return", "adjustment"].includes(
-  movement.movement_type,
-);
+                      const addsStock = ["entrada", "purchase", "devolucion", "ajuste"].includes(movement.movement_type);
                       return <tr key={movement.id}><td className="whitespace-nowrap px-5 py-4 text-xs text-slate-500">{formatDate(movement.created_at)}</td><td className="px-5 py-4 font-bold">{product?.name || "Producto"}</td><td className="px-5 py-4">{movementLabels[movement.movement_type] || movement.movement_type}</td><td className={`px-5 py-4 font-black ${addsStock ? "text-emerald-600" : "text-rose-600"}`}>{addsStock ? "+" : "−"}{movement.quantity} {product?.unit || ""}</td><td className="max-w-[220px] truncate px-5 py-4 text-slate-500">{movement.notes || "—"}</td></tr>;
                     })}
                   </tbody>
@@ -243,6 +296,7 @@ export default async function InventoryPage() {
             )}
           </section>
         </div>
+      </div>
       </div>
     </main>
   );

@@ -12,12 +12,12 @@ import {
 
 const menuItems = [
   ["Resumen", "⌂", "/"],
-  ["Ventas", "↗", "#"],
+  ["Ventas", "↗", "/ventas"],
   ["Inventario", "▦", "/inventario"],
-  ["Compras", "◎", "#"],
+  ["Compras", "◎", "/compras"],
   ["Proveedores", "◇", "/proveedores"],
-  ["Facturación", "▤", "#"],
-  ["Reportes", "◫", "#"],
+  ["Facturación", "▤", "/facturacion"],
+  ["Reportes", "◫", "/reportes"],
 ];
 
 type Supplier = {

@@ -5,8 +5,8 @@ const menuItems = [
   ["Resumen", "⌂", "/"],
   ["Ventas", "↗", "#"],
   ["Inventario", "▦", "/inventario"],
-  ["Compras", "◎", "#"],
-  ["Proveedores", "◇", "#"],
+  ["Compras", "◎", "/compras"],
+  ["Proveedores", "◇", "/proveedores"],
   ["Facturación", "▤", "#"],
   ["Reportes", "◫", "#"],
 ];
